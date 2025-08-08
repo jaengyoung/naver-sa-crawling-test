@@ -1,14 +1,16 @@
-FROM openjdk:21-jdk-slim as build
+FROM openjdk:21-jdk-slim AS build
 
 WORKDIR /app
 
 COPY build.gradle.kts .
-COPY gradle/ gradle/
-COPY gradlew .
-COPY LambdaHandler.kt ./src/main/kotlin/example/
+COPY src/ ./src/
 
-RUN chmod +x gradlew && \
-    ./gradlew clean shadowJar
+RUN apt-get update && apt-get install -y wget unzip && \
+    wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip && \
+    unzip gradle-8.5-bin.zip && \
+    mv gradle-8.5 /opt/gradle && \
+    ln -s /opt/gradle/bin/gradle /usr/bin/gradle && \
+    gradle clean shadowJar
 
 FROM public.ecr.aws/lambda/java:21
 
