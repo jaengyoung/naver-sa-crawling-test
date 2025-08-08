@@ -13,7 +13,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: source/kotlin
+        working-directory: source/python
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
