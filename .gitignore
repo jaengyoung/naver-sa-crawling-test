@@ -1,0 +1,76 @@
+########## Golang ##########
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build output
+*.test
+*.out
+
+# Output of the go build command
+bin/
+build/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (if using vendoring)
+vendor/
+
+# Logs
+*.log
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage files
+*.cover
+coverage.out
+
+# Temporary files
+*.tmp
+*.temp
+
+# Go modules cache (optional, usually safe to ignore)
+pkg/mod/
+
+# If using specific tools that generate additional files, ignore them here
+
+########## Terraform ##########
+# Local .terraform directories
+.terraform/
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# .tfvars files (store sensitive variables)
+*.tfvars
+
+# Crash log files
+crash.log
+
+# Ignore override files as they are usually local
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# SSH keys
+*.pem
+
+# Terraform CLI configuration files
+terraform.rc
+.terraformrc
