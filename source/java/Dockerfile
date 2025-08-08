@@ -2,15 +2,16 @@ FROM amazoncorretto:21-alpine as build
 
 WORKDIR /app
 
-COPY pom.xml .
+COPY build.gradle .
+COPY gradle/ gradle/
+COPY gradlew .
 COPY src/ ./src/
-COPY LambdaHandler.java ./src/main/java/example/
 
-RUN apk add --no-cache maven && \
-    mvn clean package -DskipTests
+RUN chmod +x gradlew && \
+    ./gradlew clean shadowJar
 
 FROM public.ecr.aws/lambda/java:21
 
-COPY --from=build /app/target/*.jar ${LAMBDA_TASK_ROOT}/lib/
+COPY --from=build /app/build/libs/java-lambda.jar ${LAMBDA_TASK_ROOT}/lib/
 
 CMD ["example.LambdaHandler::handleRequest"]
