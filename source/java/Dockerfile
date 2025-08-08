@@ -1,14 +1,12 @@
-FROM amazoncorretto:21-alpine as build
+FROM amazoncorretto:21-alpine AS build
 
 WORKDIR /app
 
 COPY build.gradle .
-COPY gradle/ gradle/
-COPY gradlew .
 COPY src/ ./src/
 
-RUN chmod +x gradlew && \
-    ./gradlew clean shadowJar
+RUN apk add --no-cache gradle && \
+    gradle clean shadowJar
 
 FROM public.ecr.aws/lambda/java:21
 
