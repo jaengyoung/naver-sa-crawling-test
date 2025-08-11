@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      # - 'source/**'
+      - 'source/lambda/**'
       - '.github/workflows/deploy-lambda.yml'
 
 jobs:
@@ -13,7 +13,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: source/go
+        working-directory: source/lambda
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -71,30 +71,30 @@ jobs:
         run: |
           docker push "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 
-      - name: Update Lambda function
-        run: |
-          IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+      # - name: Update Lambda function
+      #   run: |
+      #     IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
 
-          aws lambda update-function-code \
-            --function-name "$LAMBDA_FUNCTION_NAME" \
-            --image-uri "$IMAGE_URI"
+      #     aws lambda update-function-code \
+      #       --function-name "$LAMBDA_FUNCTION_NAME" \
+      #       --image-uri "$IMAGE_URI"
 
-          echo "Waiting for Lambda function update to complete..."
+      #     echo "Waiting for Lambda function update to complete..."
 
-          while true; do
-            STATUS=$(aws lambda get-function \
-              --function-name "$LAMBDA_FUNCTION_NAME" \
-              --query 'Configuration.LastUpdateStatus' \
-              --output text)
+      #     while true; do
+      #       STATUS=$(aws lambda get-function \
+      #         --function-name "$LAMBDA_FUNCTION_NAME" \
+      #         --query 'Configuration.LastUpdateStatus' \
+      #         --output text)
 
-            if [ "$STATUS" = "Successful" ]; then
-              echo "✅ Lambda update succeeded."
-              break
-            elif [ "$STATUS" = "Failed" ]; then
-              echo "❌ Lambda update failed."
-              exit 1
-            else
-              echo "ℹ️ Lambda status: $STATUS. Waiting..."
-              sleep 5
-            fi
-          done
+      #       if [ "$STATUS" = "Successful" ]; then
+      #         echo "✅ Lambda update succeeded."
+      #         break
+      #       elif [ "$STATUS" = "Failed" ]; then
+      #         echo "❌ Lambda update failed."
+      #         exit 1
+      #       else
+      #         echo "ℹ️ Lambda status: $STATUS. Waiting..."
+      #         sleep 5
+      #       fi
+      #     done
