@@ -47,6 +47,7 @@ func processRound(roundNum int) (int, error) {
 }
 
 func handler(_ context.Context) (string, error) {
+	// Registry Cache 테스트를 위한 수정
 	const totalRounds = 5
 	totalProcessed := 0
 
