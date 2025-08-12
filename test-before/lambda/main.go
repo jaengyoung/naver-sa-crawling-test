@@ -23,6 +23,12 @@ func main() {
 		log.Printf("JSON Parser initialized: %s (%s)", name, email)
 	}
 	
+	// HTTP 핸들러 초기화 (Gin 의존성 사용)
+	httpHandler := parser.CreateHTTPHandler()
+	if httpHandler != nil {
+		log.Printf("HTTP Handler initialized with Gin framework")
+	}
+	
 	lambda.Start(handler)
 }
 

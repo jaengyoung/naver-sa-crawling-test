@@ -3,7 +3,9 @@ package internal
 import (
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"
 )
 
@@ -71,6 +73,46 @@ func ExampleUsage() {
 	}
 
 	fmt.Printf("City: %s\n", city)
+}
+
+func (jp *JsonParser) CreateHTTPHandler() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.New()
+	r.Use(gin.Recovery())
+
+	r.POST("/parse", func(c *gin.Context) {
+		var requestBody struct {
+			JSON string `json:"json"`
+			Path string `json:"path"`
+		}
+
+		if err := c.ShouldBindJSON(&requestBody); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if requestBody.Path == "" {
+			name, email, err := jp.ParseUserInfo(requestBody.JSON)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"name": name, "email": email})
+		} else {
+			value, err := jp.GetNestedValue(requestBody.JSON, requestBody.Path)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"value": value})
+		}
+	})
+
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	})
+
+	return r
 }
 
 // 주석 추가요~
