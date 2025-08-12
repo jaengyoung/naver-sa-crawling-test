@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 	"log"
-	
+
 	"github.com/tidwall/gjson"
 )
 
@@ -43,7 +43,7 @@ func (jp *JsonParser) GetNestedValue(jsonStr, path string) (string, error) {
 
 func ExampleUsage() {
 	parser := NewJsonParser()
-	
+
 	sampleJSON := `{
 		"user": {
 			"name": "John Doe",
@@ -72,3 +72,5 @@ func ExampleUsage() {
 
 	fmt.Printf("City: %s\n", city)
 }
+
+// 주석 추가요~
