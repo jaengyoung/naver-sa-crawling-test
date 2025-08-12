@@ -103,7 +103,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 베이스 이미지 미리 캐싱 (선택사항)
       - name: Pre-pull base images
         run: |
           docker pull golang:1.24-alpine &
@@ -150,8 +149,10 @@ jobs:
           tags: ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
           provenance: false
           sbom: false
-          # 병렬 빌드 활성화
           platforms: linux/amd64
-          # 빌드 최적화
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+            GOMAXPROCS=4
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
