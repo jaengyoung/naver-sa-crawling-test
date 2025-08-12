@@ -19,7 +19,6 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       ECR_REPOSITORY_NAME: ${{ secrets.ECR_REPOSITORY_NAME_BEFORE }}
-      # LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
       IMAGE_TAG: latest
 
     steps:
@@ -57,3 +56,16 @@ jobs:
 
           aws ecr get-login-password --region "$AWS_REGION" | \
             docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+      - name: Build the Docker image
+        run: |
+          docker build -t "$ECR_REPOSITORY_NAME:$IMAGE_TAG" .
+
+      - name: Tag the Docker image
+        run: |
+          docker tag "$ECR_REPOSITORY_NAME:$IMAGE_TAG" \
+            "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
+
+      - name: Push the Docker image to ECR
+        run: |
+          docker push "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
