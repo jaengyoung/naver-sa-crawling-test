@@ -103,12 +103,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Pre-pull base images
-        run: |
-          docker pull golang:1.24-alpine &
-          docker pull public.ecr.aws/lambda/go:1 &
-          wait
-
       - name: Assume IAM Role to get temporary credentials
         id: assume-role
         env:
@@ -147,12 +141,6 @@ jobs:
           context: source/lambda
           push: true
           tags: ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
-          provenance: false
-          sbom: false
           platforms: linux/amd64
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
-            GOMAXPROCS=4
-          builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=gha
           cache-to: type=gha,mode=min

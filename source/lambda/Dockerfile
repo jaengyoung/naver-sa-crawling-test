@@ -59,20 +59,18 @@ WORKDIR /app
 # 종속성 파일만 먼저 복사 (Docker 레이어 캐싱 최적화)
 COPY go.mod go.sum ./
 
-# Go 모듈 병렬 다운로드
-RUN GOPROXY=https://proxy.golang.org,direct go mod download && go mod verify
+# 종속성 다운로드 (기본 설정 유지)
+RUN go mod download && go mod verify
 
 # 소스 코드 복사 (필요한 파일만)
 COPY main.go ./
 COPY internal/ ./internal/
 
-# Lambda용 최적화 빌드 (성능 + 크기 최적화)
+# Lambda 컨테이너용 정적 빌드 (최소 최적화)
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
-    -a \
     -ldflags="-s -w -extldflags '-static'" \
-    -tags netgo \
-    -installsuffix netgo \
-    -p 4 \
+    -a -installsuffix cgo \
+    -trimpath \
     -o main main.go
 
 # -------- Stage 2: Lambda Go Runtime --------
