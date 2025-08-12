@@ -129,3 +129,5 @@ func extractDesktopResults(doc *goquery.Document, keyword string) ([]SearchResul
 
 	return results, nil
 }
+
+// 파일 수정 상황 가정
