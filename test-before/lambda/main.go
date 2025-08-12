@@ -15,6 +15,14 @@ import (
 func main() {
 	log.SetOutput(os.Stdout)
 	log.SetFlags(0)
+	
+	// JSON 파서 초기화 (의존성 사용을 위해)
+	parser := NewJsonParser()
+	testJSON := `{"user":{"name":"Test","email":"test@example.com"}}`
+	if name, email, err := parser.ParseUserInfo(testJSON); err == nil {
+		log.Printf("JSON Parser initialized: %s (%s)", name, email)
+	}
+	
 	lambda.Start(handler)
 }
 
