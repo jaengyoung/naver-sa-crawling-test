@@ -21,10 +21,14 @@ jobs:
       ECR_REPOSITORY_NAME: ${{ secrets.ECR_REPOSITORY_NAME }}
       LAMBDA_FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
       IMAGE_TAG: latest
+      CACHE_TAG: cache
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Assume IAM Role to get temporary credentials
         id: assume-role
@@ -49,52 +53,23 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
 
-      - name: Authenticate Docker to ECR
+      - name: Get Account ID and Login to ECR
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
           echo "::add-mask::$ACCOUNT_ID"
           echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+          echo "ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com" >> $GITHUB_ENV
 
           aws ecr get-login-password --region "$AWS_REGION" | \
             docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
 
-      - name: Build the Docker image
-        run: |
-          docker build -t "$ECR_REPOSITORY_NAME:$IMAGE_TAG" .
-
-      - name: Tag the Docker image
-        run: |
-          docker tag "$ECR_REPOSITORY_NAME:$IMAGE_TAG" \
-            "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
-
-      - name: Push the Docker image to ECR
-        run: |
-          docker push "$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
-
-      # - name: Update Lambda function
-      #   run: |
-      #     IMAGE_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:$IMAGE_TAG"
-
-      #     aws lambda update-function-code \
-      #       --function-name "$LAMBDA_FUNCTION_NAME" \
-      #       --image-uri "$IMAGE_URI"
-
-      #     echo "Waiting for Lambda function update to complete..."
-
-      #     while true; do
-      #       STATUS=$(aws lambda get-function \
-      #         --function-name "$LAMBDA_FUNCTION_NAME" \
-      #         --query 'Configuration.LastUpdateStatus' \
-      #         --output text)
-
-      #       if [ "$STATUS" = "Successful" ]; then
-      #         echo "✅ Lambda update succeeded."
-      #         break
-      #       elif [ "$STATUS" = "Failed" ]; then
-      #         echo "❌ Lambda update failed."
-      #         exit 1
-      #       else
-      #         echo "ℹ️ Lambda status: $STATUS. Waiting..."
-      #         sleep 5
-      #       fi
-      #     done
+      - name: Build and push with Registry Cache
+        uses: docker/build-push-action@v6
+        with:
+          context: source/lambda
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
+          cache-from: type=registry,ref=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_NAME }}:${{ env.CACHE_TAG }}
+          cache-to: type=registry,ref=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY_NAME }}:${{ env.CACHE_TAG }},mode=max
+          provenance: false
+          sbom: false
