@@ -141,6 +141,6 @@ jobs:
           context: source/lambda
           push: true
           tags: ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
-          platforms: linux/amd64
+          # platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=min
