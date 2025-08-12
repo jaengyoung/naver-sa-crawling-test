@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.44.200
 	github.com/google/uuid v1.3.0
+	github.com/tidwall/gjson v1.17.1
 )
 
 require (
